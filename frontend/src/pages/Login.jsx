@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
+import axios from 'axios';
 import './Auth.css';
 
 export default function Login() {
@@ -14,18 +15,23 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 800));
 
-    // Demo login – admin@smclothing.in gets admin access
-    const isAdmin = form.email === 'admin@smclothing.in';
-    login({
-      name: isAdmin ? 'Admin User' : form.email.split('@')[0].replace(/[._]/g, ' '),
-      email: form.email,
-      isAdmin,
-    });
-    showToast(`Welcome back! 👋`);
-    navigate(isAdmin ? '/admin' : '/');
-    setLoading(false);
+    try {
+      const response = await axios.post('/api/auth/login', {
+        email: form.email,
+        password: form.password
+      });
+
+      const { token, user } = response.data;
+      login(user, token);
+      showToast(`Welcome back! 👋`);
+      navigate(user.isAdmin ? '/admin' : '/');
+    } catch (error) {
+      const message = error.response?.data?.error || 'Login failed. Please try again.';
+      showToast(message, 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

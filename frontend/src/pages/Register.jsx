@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
+import axios from 'axios';
 import './Auth.css';
 
 export default function Register() {
@@ -15,11 +16,25 @@ export default function Register() {
     e.preventDefault();
     if (form.password !== form.confirm) { showToast('Passwords do not match', 'error'); return; }
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 800));
-    login({ name: form.name, email: form.email, isAdmin: false });
-    showToast('Account created! Welcome to SM Clothing 🎉');
-    navigate('/');
-    setLoading(false);
+
+    try {
+      const response = await axios.post('/api/auth/register', {
+        name: form.name,
+        email: form.email,
+        phone: form.phone || undefined,
+        password: form.password
+      });
+
+      const { token, user } = response.data;
+      login(user, token);
+      showToast('Account created! Welcome to SM Clothing 🎉');
+      navigate('/');
+    } catch (error) {
+      const message = error.response?.data?.error || 'Registration failed. Please try again.';
+      showToast(message, 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
