@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import db from '../db/database.js';
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'sm_clothing_secret_2025';
+const JWT_SECRET = process.env.JWT_SECRET || 'sm_clothing_dev_secret_change_in_prod';
 
 // Register
 router.post('/register', async (req, res) => {
